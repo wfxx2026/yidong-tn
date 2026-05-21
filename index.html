@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>益东煤矿专职学员培训班 - 在线考勤表</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            min-width: 1400px;
+        }
+        .container {
+            max-width: 1700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a5f2a 0%, #2d8a4e 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+        }
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 7px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .btn-primary { background: #2d8a4e; color: white; }
+        .btn-primary:hover { background: #236b3a; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #545b62; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .search-box {
+            padding: 7px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 160px;
+        }
+        .legend {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .legend-symbol {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 72vh;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 1500px;
+        }
+        thead { position: sticky; top: 0; z-index: 10; }
+        th {
+            background: #2d8a4e;
+            color: white;
+            padding: 8px 5px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #1a5f2a;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+        }
+        th.sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background: #2d8a4e;
+            width: 45px;
+        }
+        th.sticky-col-2 {
+            position: sticky;
+            left: 45px;
+            z-index: 20;
+            background: #2d8a4e;
+            width: 100px;
+        }
+        th.sticky-col-3 {
+            position: sticky;
+            left: 145px;
+            z-index: 20;
+            background: #2d8a4e;
+            width: 55px;
+        }
+        td {
+            border: 1px solid #d0d0d0;
+            padding: 0;
+            text-align: center;
+            height: 32px;
+            vertical-align: middle;
+        }
+        td.sticky-col {
+            position: sticky;
+            left: 0;
+            background: #f8f9fa;
+            z-index: 5;
+            font-weight: 600;
+            padding: 6px;
+        }
+        td.sticky-col-2 {
+            position: sticky;
+            left: 45px;
+            background: white;
+            z-index: 5;
+            padding: 3px;
+        }
+        td.sticky-col-3 {
+            position: sticky;
+            left: 145px;
+            background: #f8f9fa;
+            z-index: 5;
+            font-weight: 600;
+            padding: 4px;
+            font-size: 12px;
+        }
+        .student-name input {
+            width: 100%;
+            border: none;
+            padding: 5px;
+            text-align: center;
+            font-size: 13px;
+            background: transparent;
+            outline: none;
+        }
+        .student-name input:focus { background: #e8f5e9; }
+        .date-header { min-width: 34px; font-size: 11px; }
+        .date-header .day-num { font-size: 13px; font-weight: bold; }
+        .date-header .weekday { font-size: 10px; opacity: 0.9; }
+        .weekend-header { background: #c0392b !important; }
+        .attendance-cell {
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+            position: relative;
+        }
+        .attendance-cell:hover {
+            background: #e8f5e9;
+            transform: scale(1.15);
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .attendance-cell.present { background: #d4edda; color: #155724; }
+        .attendance-cell.late { background: #fff3cd; color: #856404; }
+        .attendance-cell.early { background: #ffe0b2; color: #e65100; }
+        .attendance-cell.absent { background: #f8d7da; color: #721c24; }
+        .attendance-cell.weekend {
+            background: #f5f5f5;
+            cursor: default;
+        }
+        .attendance-cell.weekend:hover {
+            transform: none;
+            box-shadow: none;
+            background: #f5f5f5;
+        }
+        .attendance-cell .cell-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .stats-row td {
+            background: #e8f5e9;
+            font-weight: 600;
+            padding: 6px;
+            font-size: 11px;
+        }
+        .stats-row .sticky-col,
+        .stats-row .sticky-col-2,
+        .stats-row .sticky-col-3 { background: #c8e6c9; }
+        .note-section {
+            padding: 12px 30px;
+            background: #fff8e1;
+            border-top: 1px solid #ffe0b2;
+            font-size: 13px;
+            color: #5d4037;
+        }
+        .note-section strong { color: #e65100; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .modal h3 { margin-bottom: 20px; color: #333; }
+        .modal-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .modal-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .modal-option:hover {
+            border-color: #2d8a4e;
+            background: #f1f8e9;
+        }
+        .modal-option.selected {
+            border-color: #2d8a4e;
+            background: #e8f5e9;
+        }
+        .modal-option .symbol {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .modal-option .label { font-size: 13px; color: #666; }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .month-divider { border-left: 3px solid #1a5f2a !important; }
+        .today-highlight {
+            border: 2px solid #2196f3 !important;
+            position: relative;
+        }
+        .today-highlight::after {
+            content: '';
+            position: absolute;
+            top: -2px; right: -2px;
+            width: 0; height: 0;
+            border-style: solid;
+            border-width: 0 8px 8px 0;
+            border-color: transparent #2196f3 transparent transparent;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        .summary-panel {
+            display: none;
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-panel.active { display: block; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .summary-card {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .summary-card h4 {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .summary-card .value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2d8a4e;
+        }
+        .batch-bar {
+            display: none;
+            padding: 10px 30px;
+            background: #e3f2fd;
+            border-bottom: 1px solid #bbdefb;
+            align-items: center;
+            gap: 15px;
+        }
+        .batch-bar.active { display: flex; }
+        .batch-bar span { font-size: 13px; color: #1565c0; }
+        .github-guide {
+            display: none;
+            padding: 20px 30px;
+            background: #f3e5f5;
+            border-bottom: 2px solid #ce93d8;
+        }
+        .github-guide.active { display: block; }
+        .github-guide h3 {
+            color: #6a1b9a;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .github-guide ol {
+            margin-left: 20px;
+            line-height: 2;
+            color: #4a148c;
+        }
+        .github-guide code {
+            background: #e1bee7;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        @media print {
+            body { padding: 0; background: white; }
+            .toolbar, .modal-overlay, .toast, .summary-panel, .batch-bar, .github-guide { display: none !important; }
+            .container { box-shadow: none; border-radius: 0; }
+            .table-wrapper { max-height: none; overflow: visible; }
+            .attendance-cell:hover { transform: none; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>学 员 考 勤 表</h1>
+            <div class="subtitle">班次：2026年益东煤矿专职学员培训班 &nbsp;&nbsp;|&nbsp;&nbsp; 考勤员：__________</div>
+            <div class="subtitle" style="margin-top:5px;">考勤周期：2026年5月15日 ～ 2026年8月12日（共90天）</div>
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn btn-primary" onclick="addStudent()">➕ 添加学员</button>
+                <button class="btn btn-secondary" onclick="removeStudent()">➖ 删除学员</button>
+                <button class="btn btn-info" onclick="toggleBatchMode()">📋 批量</button>
+                <input type="text" class="search-box" id="searchName" placeholder="搜索学员姓名..." oninput="filterStudents()">
+            </div>
+            <div class="toolbar-right">
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-symbol" style="background:#d4edda;color:#155724;">√</div><span>出勤</span></div>
+                    <div class="legend-item"><div class="legend-symbol" style="background:#fff3cd;color:#856404;">△</div><span>迟到</span></div>
+                    <div class="legend-item"><div class="legend-symbol" style="background:#ffe0b2;color:#e65100;">○</div><span>早退</span></div>
+                    <div class="legend-item"><div class="legend-symbol" style="background:#f8d7da;color:#721c24;">×</div><span>缺勤</span></div>
+                </div>
+                <button class="btn btn-info" onclick="toggleSummary()">📊 统计</button>
+                <button class="btn btn-warning" onclick="exportJSON()">💾 导出</button>
+                <button class="btn btn-warning" onclick="exportCSV()">📄 CSV</button>
+                <button class="btn btn-secondary" onclick="window.print()">🖨️ 打印</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空</button>
+                <button class="btn btn-primary" onclick="toggleGuide()">📖 GitHub部署</button>
+            </div>
+        </div>
+
+        <div class="github-guide" id="githubGuide">
+            <h3>🚀 GitHub Pages 部署指南</h3>
+            <ol>
+                <li>注册/登录 <a href="https://github.com" target="_blank">github.com</a>，点击右上角 ➕ → <strong>New repository</strong></li>
+                <li>仓库名称填写：<code>yidong-attendance</code>（或任意名称），选择 <strong>Public</strong>，勾选 <strong>Add a README file</strong></li>
+                <li>进入仓库 → 点击 <strong>Add file</strong> → <strong>Upload files</strong>，上传本 <code>index.html</code> 文件</li>
+                <li>进入 <strong>Settings</strong> → 左侧 <strong>Pages</strong> → Source 选择 <strong>Deploy from a branch</strong> → Branch 选 <strong>main</strong> → 点击 <strong>Save</strong></li>
+                <li>等待1-2分钟，访问 <code>https://你的用户名.github.io/yidong-attendance</code> 即可在线使用！</li>
+                <li>如需自定义域名：在 Pages 设置中填写域名，并在仓库根目录添加 <code>CNAME</code> 文件</li>
+            </ol>
+            <p style="margin-top:10px;color:#6a1b9a;"><strong>提示：</strong>GitHub Pages 免费、稳定、全球可访问，数据保存在用户本地浏览器，刷新不丢失！</p>
+        </div>
+
+        <div class="batch-bar" id="batchBar">
+            <span>批量操作：选择日期范围</span>
+            <input type="date" id="batchStart" value="2026-05-15" min="2026-05-15" max="2026-08-12">
+            <span>至</span>
+            <input type="date" id="batchEnd" value="2026-05-15" min="2026-05-15" max="2026-08-12">
+            <button class="btn btn-primary" onclick="batchMark('present')">全出勤</button>
+            <button class="btn btn-secondary" onclick="batchMark('absent')">全缺勤</button>
+            <button class="btn btn-secondary" onclick="toggleBatchMode()">取消</button>
+        </div>
+
+        <div class="summary-panel" id="summaryPanel">
+            <div class="summary-grid" id="summaryGrid"></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="attendanceTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="note-section">
+            <strong>考勤说明：</strong>出勤√ &nbsp;&nbsp; 迟到△ &nbsp;&nbsp; 早退○ &nbsp;&nbsp; 缺勤× &nbsp;&nbsp;&nbsp;&nbsp;
+            学员参加学习，缺勤超过总课时三分之一者不得参加考试。 &nbsp;&nbsp;&nbsp;&nbsp;
+            <span style="color:#2196f3;">● 蓝色边框标记为今日日期</span> &nbsp;&nbsp;
+            <span style="color:#c0392b;">红色表头为周末</span> &nbsp;&nbsp;
+            <span style="color:#666;">点击单元格即可标记考勤状态，数据自动保存到浏览器</span>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="attendanceModal">
+        <div class="modal">
+            <h3>选择考勤状态</h3>
+            <div class="modal-options">
+                <div class="modal-option" data-status="present" onclick="selectStatus('present')">
+                    <div class="symbol" style="color:#155724;">√</div>
+                    <div class="label">出勤</div>
+                </div>
+                <div class="modal-option" data-status="late" onclick="selectStatus('late')">
+                    <div class="symbol" style="color:#856404;">△</div>
+                    <div class="label">迟到</div>
+                </div>
+                <div class="modal-option" data-status="early" onclick="selectStatus('early')">
+                    <div class="symbol" style="color:#e65100;">○</div>
+                    <div class="label">早退</div>
+                </div>
+                <div class="modal-option" data-status="absent" onclick="selectStatus('absent')">
+                    <div class="symbol" style="color:#721c24;">×</div>
+                    <div class="label">缺勤</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="clearCell()">清空</button>
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmStatus()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+<script>
+// ==================== 日期数据 ====================
+const dates = [
+  {date:'2026-05-15',day:15,month:5,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-05-16',day:16,month:5,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-05-17',day:17,month:5,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-05-18',day:18,month:5,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-05-19',day:19,month:5,weekday:'二',isWeekend:false,isToday:true},
+  {date:'2026-05-20',day:20,month:5,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-05-21',day:21,month:5,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-05-22',day:22,month:5,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-05-23',day:23,month:5,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-05-24',day:24,month:5,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-05-25',day:25,month:5,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-05-26',day:26,month:5,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-05-27',day:27,month:5,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-05-28',day:28,month:5,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-05-29',day:29,month:5,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-05-30',day:30,month:5,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-05-31',day:31,month:5,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-06-01',day:1,month:6,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-06-02',day:2,month:6,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-06-03',day:3,month:6,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-06-04',day:4,month:6,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-06-05',day:5,month:6,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-06-06',day:6,month:6,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-06-07',day:7,month:6,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-06-08',day:8,month:6,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-06-09',day:9,month:6,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-06-10',day:10,month:6,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-06-11',day:11,month:6,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-06-12',day:12,month:6,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-06-13',day:13,month:6,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-06-14',day:14,month:6,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-06-15',day:15,month:6,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-06-16',day:16,month:6,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-06-17',day:17,month:6,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-06-18',day:18,month:6,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-06-19',day:19,month:6,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-06-20',day:20,month:6,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-06-21',day:21,month:6,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-06-22',day:22,month:6,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-06-23',day:23,month:6,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-06-24',day:24,month:6,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-06-25',day:25,month:6,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-06-26',day:26,month:6,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-06-27',day:27,month:6,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-06-28',day:28,month:6,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-06-29',day:29,month:6,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-06-30',day:30,month:6,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-07-01',day:1,month:7,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-07-02',day:2,month:7,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-07-03',day:3,month:7,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-07-04',day:4,month:7,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-07-05',day:5,month:7,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-07-06',day:6,month:7,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-07-07',day:7,month:7,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-07-08',day:8,month:7,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-07-09',day:9,month:7,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-07-10',day:10,month:7,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-07-11',day:11,month:7,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-07-12',day:12,month:7,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-07-13',day:13,month:7,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-07-14',day:14,month:7,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-07-15',day:15,month:7,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-07-16',day:16,month:7,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-07-17',day:17,month:7,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-07-18',day:18,month:7,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-07-19',day:19,month:7,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-07-20',day:20,month:7,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-07-21',day:21,month:7,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-07-22',day:22,month:7,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-07-23',day:23,month:7,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-07-24',day:24,month:7,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-07-25',day:25,month:7,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-07-26',day:26,month:7,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-07-27',day:27,month:7,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-07-28',day:28,month:7,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-07-29',day:29,month:7,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-07-30',day:30,month:7,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-07-31',day:31,month:7,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-08-01',day:1,month:8,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-08-02',day:2,month:8,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-08-03',day:3,month:8,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-08-04',day:4,month:8,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-08-05',day:5,month:8,weekday:'三',isWeekend:false,isToday:false},
+  {date:'2026-08-06',day:6,month:8,weekday:'四',isWeekend:false,isToday:false},
+  {date:'2026-08-07',day:7,month:8,weekday:'五',isWeekend:false,isToday:false},
+  {date:'2026-08-08',day:8,month:8,weekday:'六',isWeekend:true,isToday:false},
+  {date:'2026-08-09',day:9,month:8,weekday:'日',isWeekend:true,isToday:false},
+  {date:'2026-08-10',day:10,month:8,weekday:'一',isWeekend:false,isToday:false},
+  {date:'2026-08-11',day:11,month:8,weekday:'二',isWeekend:false,isToday:false},
+  {date:'2026-08-12',day:12,month:8,weekday:'三',isWeekend:false,isToday:false}
+];
+
+const STATUS_CONFIG = {
+    present: { symbol: '√', class: 'present', label: '出勤' },
+    late: { symbol: '△', class: 'late', label: '迟到' },
+    early: { symbol: '○', class: 'early', label: '早退' },
+    absent: { symbol: '×', class: 'absent', label: '缺勤' }
+};
+
+let students = JSON.parse(localStorage.getItem('attendance_students_v3')) || 
+    Array.from({length: 12}, (_, i) => ({ id: i+1, name: '' }));
+let attendanceData = JSON.parse(localStorage.getItem('attendance_data_v3')) || {};
+let currentCell = null;
+let selectedStatus = null;
+let batchMode = false;
+
+function init() {
+    renderTable();
+    loadData();
+}
+
+function renderTable() {
+    const thead = document.getElementById('tableHead');
+    let headerHTML = '<tr>';
+    headerHTML += '<th class="sticky-col">序号</th>';
+    headerHTML += '<th class="sticky-col-2">姓名</th>';
+    headerHTML += '<th class="sticky-col-3">时间</th>';
+
+    let lastMonth = 0;
+    dates.forEach((d, i) => {
+        const monthClass = d.month !== lastMonth ? 'month-divider' : '';
+        const weekendClass = d.isWeekend ? 'weekend-header' : '';
+        const todayClass = d.isToday ? 'today-highlight' : '';
+        headerHTML += `<th class="date-header ${monthClass} ${weekendClass} ${todayClass}" title="${d.date} 星期${d.weekday}">`;
+        headerHTML += `<div class="day-num">${d.day}</div>`;
+        headerHTML += `<div class="weekday">${d.weekday}</div>`;
+        headerHTML += '</th>';
+        lastMonth = d.month;
+    });
+    headerHTML += '<th style="min-width:70px;">签字</th>';
+    headerHTML += '</tr>';
+    thead.innerHTML = headerHTML;
+    renderBody();
+}
+
+function renderBody() {
+    const tbody = document.getElementById('tableBody');
+    let bodyHTML = '';
+
+    students.forEach((student, idx) => {
+        bodyHTML += '<tr>';
+        bodyHTML += `<td class="sticky-col" rowspan="2">${idx + 1}</td>`;
+        bodyHTML += `<td class="sticky-col-2 student-name" rowspan="2"><input type="text" value="${student.name}" onchange="updateName(${student.id}, this.value)" placeholder="姓名"></td>`;
+        bodyHTML += '<td class="sticky-col-3">上午</td>';
+
+        dates.forEach((d, di) => {
+            const cellKey = `${student.id}_${d.date}_am`;
+            const status = attendanceData[cellKey];
+            const weekendClass = d.isWeekend ? 'weekend' : '';
+            const todayClass = d.isToday ? 'today-highlight' : '';
+            const statusClass = status ? STATUS_CONFIG[status].class : '';
+            const symbol = status ? STATUS_CONFIG[status].symbol : '';
+
+            bodyHTML += `<td class="attendance-cell ${weekendClass} ${todayClass} ${statusClass}" `;
+            bodyHTML += `onclick="handleCellClick('${cellKey}', this)" `;
+            bodyHTML += `title="${student.name || '学员'+(idx+1)} ${d.date} 上午">`;
+            bodyHTML += `<div class="cell-content">${symbol}</div>`;
+            bodyHTML += '</td>';
+        });
+        bodyHTML += '<td rowspan="2"></td></tr>';
+
+        bodyHTML += '<tr>';
+        bodyHTML += '<td class="sticky-col-3">下午</td>';
+        dates.forEach((d, di) => {
+            const cellKey = `${student.id}_${d.date}_pm`;
+            const status = attendanceData[cellKey];
+            const weekendClass = d.isWeekend ? 'weekend' : '';
+            const todayClass = d.isToday ? 'today-highlight' : '';
+            const statusClass = status ? STATUS_CONFIG[status].class : '';
+            const symbol = status ? STATUS_CONFIG[status].symbol : '';
+
+            bodyHTML += `<td class="attendance-cell ${weekendClass} ${todayClass} ${statusClass}" `;
+            bodyHTML += `onclick="handleCellClick('${cellKey}', this)" `;
+            bodyHTML += `title="${student.name || '学员'+(idx+1)} ${d.date} 下午">`;
+            bodyHTML += `<div class="cell-content">${symbol}</div>`;
+            bodyHTML += '</td>';
+        });
+        bodyHTML += '</tr>';
+    });
+
+    bodyHTML += '<tr class="stats-row">';
+    bodyHTML += '<td class="sticky-col" colspan="3">出勤统计</td>';
+    dates.forEach(d => {
+        const todayClass = d.isToday ? 'today-highlight' : '';
+        bodyHTML += `<td class="${d.isWeekend ? 'weekend' : ''} ${todayClass}">-</td>`;
+    });
+    bodyHTML += '<td></td></tr>';
+
+    tbody.innerHTML = bodyHTML;
+}
+
+function handleCellClick(cellKey, cellElement) {
+    if (cellElement.classList.contains('weekend')) return;
+    if (batchMode) {
+        attendanceData[cellKey] = 'present';
+        saveData();
+        renderBody();
+        return;
+    }
+    openModal(cellKey, cellElement);
+}
+
+function updateName(id, name) {
+    const student = students.find(s => s.id === id);
+    if (student) {
+        student.name = name.trim();
+        saveData();
+        showToast('姓名已保存');
+    }
+}
+
+function addStudent() {
+    const newId = Math.max(...students.map(s => s.id), 0) + 1;
+    students.push({ id: newId, name: '' });
+    saveData();
+    renderBody();
+    showToast('已添加新学员');
+}
+
+function removeStudent() {
+    if (students.length <= 1) {
+        showToast('至少保留一名学员');
+        return;
+    }
+    const lastStudent = students[students.length - 1];
+    Object.keys(attendanceData).forEach(key => {
+        if (key.startsWith(`${lastStudent.id}_`)) delete attendanceData[key];
+    });
+    students.pop();
+    saveData();
+    renderBody();
+    showToast('已删除最后一名学员');
+}
+
+function filterStudents() {
+    const query = document.getElementById('searchName').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#tableBody > tr:not(.stats-row)');
+    rows.forEach((row, idx) => {
+        if (idx % 2 === 0) {
+            const student = students[Math.floor(idx / 2)];
+            const nameMatch = !query || (student.name && student.name.toLowerCase().includes(query));
+            row.style.display = nameMatch ? '' : 'none';
+            if (rows[idx + 1]) rows[idx + 1].style.display = nameMatch ? '' : 'none';
+        }
+    });
+}
+
+function openModal(cellKey, cellElement) {
+    currentCell = { key: cellKey, element: cellElement };
+    selectedStatus = attendanceData[cellKey] || null;
+    document.querySelectorAll('.modal-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.status === selectedStatus);
+    });
+    document.getElementById('attendanceModal').classList.add('active');
+}
+
+function selectStatus(status) {
+    selectedStatus = status;
+    document.querySelectorAll('.modal-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.status === status);
+    });
+}
+
+function confirmStatus() {
+    if (selectedStatus && currentCell) {
+        attendanceData[currentCell.key] = selectedStatus;
+        saveData();
+        renderBody();
+        showToast(`已标记为${STATUS_CONFIG[selectedStatus].label}`);
+    }
+    closeModal();
+}
+
+function clearCell() {
+    if (currentCell && attendanceData[currentCell.key]) {
+        delete attendanceData[currentCell.key];
+        saveData();
+        renderBody();
+        showToast('已清空');
+    }
+    closeModal();
+}
+
+function closeModal() {
+    document.getElementById('attendanceModal').classList.remove('active');
+    currentCell = null;
+    selectedStatus = null;
+}
+
+function toggleBatchMode() {
+    batchMode = !batchMode;
+    document.getElementById('batchBar').classList.toggle('active', batchMode);
+    showToast(batchMode ? '批量模式：点击单元格直接标记出勤' : '已退出批量模式');
+}
+
+function batchMark(status) {
+    const start = document.getElementById('batchStart').value;
+    const end = document.getElementById('batchEnd').value;
+    if (!start || !end) {
+        showToast('请选择日期范围');
+        return;
+    }
+    let count = 0;
+    students.forEach(s => {
+        dates.forEach(d => {
+            if (d.date >= start && d.date <= end && !d.isWeekend) {
+                attendanceData[`${s.id}_${d.date}_am`] = status;
+                attendanceData[`${s.id}_${d.date}_pm`] = status;
+                count += 2;
+            }
+        });
+    });
+    saveData();
+    renderBody();
+    showToast(`已为${students.length}名学员的${count/2}个工作日标记${STATUS_CONFIG[status].label}`);
+}
+
+function toggleSummary() {
+    const panel = document.getElementById('summaryPanel');
+    panel.classList.toggle('active');
+    if (panel.classList.contains('active')) updateSummary();
+}
+
+function updateSummary() {
+    const grid = document.getElementById('summaryGrid');
+    let totalPresent = 0, totalLate = 0, totalEarly = 0, totalAbsent = 0;
+    let activeStudents = 0;
+    students.forEach(s => {
+        if (!s.name) return;
+        activeStudents++;
+        let sp = 0, sl = 0, se = 0, sa = 0;
+        dates.forEach(d => {
+            if (d.isWeekend) return;
+            const am = attendanceData[`${s.id}_${d.date}_am`];
+            const pm = attendanceData[`${s.id}_${d.date}_pm`];
+            [am, pm].forEach(st => {
+                if (st === 'present') sp++;
+                else if (st === 'late') sl++;
+                else if (st === 'early') se++;
+                else if (st === 'absent') sa++;
+            });
+        });
+        totalPresent += sp; totalLate += sl; totalEarly += se; totalAbsent += sa;
+    });
+    const workDays = dates.filter(d => !d.isWeekend).length * 2;
+    const totalSlots = activeStudents * workDays;
+    const filled = totalPresent + totalLate + totalEarly + totalAbsent;
+    grid.innerHTML = `
+        <div class="summary-card"><h4>学员人数</h4><div class="value">${activeStudents}</div></div>
+        <div class="summary-card"><h4>总出勤</h4><div class="value" style="color:#155724;">${totalPresent}</div></div>
+        <div class="summary-card"><h4>总迟到</h4><div class="value" style="color:#856404;">${totalLate}</div></div>
+        <div class="summary-card"><h4>总早退</h4><div class="value" style="color:#e65100;">${totalEarly}</div></div>
+        <div class="summary-card"><h4>总缺勤</h4><div class="value" style="color:#721c24;">${totalAbsent}</div></div>
+        <div class="summary-card"><h4>考勤完成率</h4><div class="value" style="color:#2196f3;">${totalSlots > 0 ? (filled/totalSlots*100).toFixed(1) : 0}%</div></div>
+    `;
+}
+
+function toggleGuide() {
+    document.getElementById('githubGuide').classList.toggle('active');
+}
+
+function exportJSON() {
+    const data = {
+        exportTime: new Date().toLocaleString('zh-CN'),
+        className: '2026年益东煤矿专职学员培训班',
+        period: '2026年5月15日 ～ 2026年8月12日',
+        students: students,
+        attendance: attendanceData,
+        dates: dates.map(d => d.date)
+    };
+    downloadFile(JSON.stringify(data, null, 2), `益东考勤_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+    showToast('JSON数据已导出');
+}
+
+function exportCSV() {
+    let csv = '\uFEFF序号,姓名';
+    dates.forEach(d => { csv += `,${d.date}上午,${d.date}下午`; });
+    csv += '\n';
+    students.forEach((s, idx) => {
+        csv += `${idx+1},${s.name || ''}`;
+        dates.forEach(d => {
+            const am = attendanceData[`${s.id}_${d.date}_am`];
+            const pm = attendanceData[`${s.id}_${d.date}_pm`];
+            csv += `,${am ? STATUS_CONFIG[am].symbol : ''},${pm ? STATUS_CONFIG[pm].symbol : ''}`;
+        });
+        csv += '\n';
+    });
+    downloadFile(csv, `益东考勤_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+    showToast('CSV表格已导出');
+}
+
+function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function clearAllData() {
+    if (!confirm('确定要清空所有考勤数据吗？此操作不可恢复！')) return;
+    attendanceData = {};
+    students = Array.from({length: 12}, (_, i) => ({ id: i+1, name: '' }));
+    saveData();
+    renderBody();
+    showToast('所有数据已清空');
+}
+
+function saveData() {
+    localStorage.setItem('attendance_students_v3', JSON.stringify(students));
+    localStorage.setItem('attendance_data_v3', JSON.stringify(attendanceData));
+}
+
+function loadData() {
+    renderBody();
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+document.getElementById('attendanceModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
